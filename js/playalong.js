@@ -2,7 +2,7 @@
 // a mikrofon (nebo klepnutí na hmatník) kontroluje, jestli hraješ správně. Bez hodnocení rytmu.
 import { OPEN, positions, nameOf, octName, labelOf, parseNote, midiOf, spell } from './music.js';
 import { cfg, notePool, preferFlats, pct } from './store.js';
-import { play, startMetronome, stopMetronome, setMetronome, metronomeOn } from './audio.js';
+import { play, togglePlayback, stopPlayback, startMetronome, stopMetronome, setMetronome, metronomeOn } from './audio.js';
 import { $, el, drawStaff, drawFretboard } from './draw.js';
 import { micOn, startMic, stopMic } from './mic.js';
 import { record } from './stats.js';
@@ -23,6 +23,7 @@ function randomSeq() {
 const etudeSeq = i => ETUDES[i].notes.split(' ').map(t => { const n = parseNote(t); return { ...n, midi: midiOf(n.step, n.acc) }; });
 
 function start(newSource) {
+  stopPlayback();
   source = newSource;
   seq = source === 'random' ? randomSeq() : etudeSeq(source);
   pos = tries = firstTry = 0;
@@ -108,10 +109,8 @@ $('#metroBtn').onclick = () => {
   if (metronomeOn()) stopMetronome(); else startMetronome({ bpm: +$('#tempo').value });
   $('#metroBtn').classList.toggle('on', metronomeOn());
 };
-$('#alongPlay').onclick = () => {
-  const beat = 60 / +$('#tempo').value;
-  seq.slice(pos).forEach((n, i) => play(n.midi, i * beat));
-};
+// přehraje zbytek řady od aktuální noty v nastaveném tempu
+$('#alongPlay').onclick = e => togglePlayback(e.currentTarget, seq.slice(pos).map(n => [n.midi]), 60 / +$('#tempo').value);
 $('#alongHint').onclick = () => {
   if (pos < seq.length) drawFretboard($('#alongFret'), positions(seq[pos].midi).map(([s, f]) => ({ s, f, cls: 'target' })), { onClick: tapFret });
 };

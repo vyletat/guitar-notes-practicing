@@ -1,5 +1,6 @@
 // Vstupní bod: nastavení, navigace mezi stránkami a service worker.
 import { STRING_NAMES } from './music.js';
+import { stopPlayback } from './audio.js';
 import { cfg, saveCfg, resetStats } from './store.js';
 import { $, $$ } from './draw.js';
 import * as practice from './practice.js';
@@ -79,6 +80,7 @@ function route() {
   live.hide(); // vypne mikrofon a metronom při odchodu ze stránky
   along.hide();
   metronome.hide();
+  stopPlayback(); // přehrávání nemá hrát dál na jiné stránce
   show(arg, arg2);
   scrollTo(0, 0);
 }

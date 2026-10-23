@@ -3,7 +3,7 @@
 // nebo data-fret="6:0 5:2" (struna:pražec), data-chord = zahrát najednou, data-text = popisek.
 import { OPEN, midiOf, parseNote } from './music.js';
 import { readLessons, markRead } from './store.js';
-import { play } from './audio.js';
+import { togglePlayback } from './audio.js';
 import { $, el, drawStaff, drawFretboard } from './draw.js';
 import { LESSONS } from './lessons-content.js';
 
@@ -53,7 +53,7 @@ export function renderLesson(arg) {
     const b = document.createElement('button');
     b.className = 'btn';
     b.textContent = '▶ Přehrát';
-    b.onclick = () => seq.forEach((chord, i) => chord.forEach((m, j) => play(m, i * 0.5 + j * 0.05)));
+    b.onclick = () => togglePlayback(b, seq, 0.5);
     ex.append(b);
   }
 }

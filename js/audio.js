@@ -2,6 +2,8 @@
 let ac;
 export const audio = () => (ac ??= new AudioContext());
 
+const voices = new Set(); // znějící a naplánované tóny, aby šly zastavit
+
 export function play(midi, delay = 0) {
   const ctx = audio(), o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + delay;
   o.type = 'triangle';
@@ -11,6 +13,37 @@ export function play(midi, delay = 0) {
   o.connect(g).connect(ctx.destination);
   o.start(t);
   o.stop(t + 1.5);
+  const voice = { o, g };
+  voices.add(voice);
+  o.onended = () => voices.delete(voice);
+}
+
+// ---------- přehrávání sekvencí s tlačítkem ▶ Přehrát / ■ Zastavit ----------
+let playing = null; // { btn, label, timer }
+
+// seq = pole akordů (každý = pole MIDI), step = rozestup v sekundách
+export function togglePlayback(btn, seq, step) {
+  const same = playing?.btn === btn;
+  stopPlayback();
+  if (same || !seq.length) return;
+  seq.forEach((chord, i) => chord.forEach((m, j) => play(m, i * step + j * 0.05)));
+  playing = { btn, label: btn.textContent, timer: setTimeout(stopPlayback, ((seq.length - 1) * step + 1.5) * 1000) };
+  btn.textContent = '■ Zastavit';
+}
+
+export function stopPlayback() {
+  if (!ac) return; // ještě nic nehrálo
+  const t = ac.currentTime;
+  for (const { o, g } of voices) { // rychlé ztlumení místo useknutí, aby to necvaklo
+    g.gain.cancelScheduledValues(t);
+    g.gain.setTargetAtTime(0, t, 0.015);
+    try { o.stop(t + 0.1); } catch {}
+  }
+  voices.clear();
+  if (!playing) return;
+  clearTimeout(playing.timer);
+  playing.btn.textContent = playing.label;
+  playing = null;
 }
 
 // krátké cvaknutí metronomu v čase `when` (ctx.currentTime), první doba taktu vyšší

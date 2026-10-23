@@ -1,5 +1,5 @@
 // Network-first: online vždy čerstvá verze, offline z cache.
-const CACHE = 'noty-v7';
+const CACHE = 'noty-v8';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png',
   ...['main', 'music', 'pitch', 'store', 'audio', 'draw', 'dial', 'practice', 'stats', 'lessons', 'lessons-content', 'live', 'mic', 'playalong', 'etudes', 'metronome'].map(f => `js/${f}.js`)];
 
