@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Noty na kytaru</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#f3f4f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e13" media="(prefers-color-scheme: dark)">
+<style>
+  :root {
+    --bg: #f3f4f8; --surface: #fff; --surface-2: #e9ebf2; --fg: #14151a; --muted: #6b7080; --line: #e3e5ec;
+    --accent: #6152f5; --accent-2: #9b5cf6; --accent-soft: rgba(97, 82, 245, .12); --on-accent: #fff;
+    --ok: #12a150; --ok-soft: rgba(18, 161, 80, .12); --bad: #e5484d; --bad-soft: rgba(229, 72, 77, .12);
+    --heat: 97, 82, 245;
+    --shadow: 0 1px 2px rgba(16, 18, 40, .05), 0 8px 24px rgba(16, 18, 40, .06);
+    --wood: linear-gradient(180deg, #e9d2ab, #dcbc8c); --string: #5b4a37; --fret: #a9a49b; --nut: #fbf6ea; --inlay: rgba(255, 255, 255, .7);
+    --radius: 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d0e13; --surface: #171922; --surface-2: #222533; --fg: #eceef5; --muted: #8e93a6; --line: #272a38;
+      --accent: #8f84ff; --accent-2: #c084fc; --accent-soft: rgba(143, 132, 255, .16); --on-accent: #0d0e13;
+      --ok: #3dd68c; --ok-soft: rgba(61, 214, 140, .14); --bad: #ff6b6f; --bad-soft: rgba(255, 107, 111, .14);
+      --heat: 143, 132, 255;
+      --shadow: 0 0 0 1px rgba(255, 255, 255, .04), 0 8px 24px rgba(0, 0, 0, .35);
+      --wood: linear-gradient(180deg, #3d3024, #2c231a); --string: #d8cfc0; --fret: #6f6a62; --nut: #e8e0cf; --inlay: rgba(255, 255, 255, .22);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: calc(84px + env(safe-area-inset-bottom)); -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); }
+  button { font: inherit; color: inherit; }
+
+  /* hlavička a menu */
+  header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 760px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 16px 10px; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; margin: 0; }
+  #score { font-weight: 700; font-variant-numeric: tabular-nums; background: var(--accent-soft); color: var(--accent); padding: 4px 12px; border-radius: 999px; font-size: .9rem; }
+  #score:empty { display: none; }
+  main { max-width: 760px; margin: 0 auto; padding: 4px 16px 16px; }
+  #menu { position: fixed; inset: auto 0 0 0; z-index: 10; display: flex; justify-content: center; gap: 4px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+  #menu a { flex: 1; min-width: 0; max-width: 140px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); text-decoration: none; font-size: .68rem; font-weight: 600; white-space: nowrap; }
+  #menu svg { width: 52px; height: 30px; padding: 4px 14px; border-radius: 999px; background: none; margin: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: background .2s; }
+  #menu a.on { color: var(--accent); }
+  #menu a.on svg { background: var(--accent-soft); }
+
+  /* společné prvky */
+  .card { background: var(--surface); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 10px; font-size: 1.05rem; }
+  .hint { color: var(--muted); font-size: .85rem; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; padding: 8px 14px; border-radius: 12px; border: 0; background: var(--surface-2); color: var(--fg); cursor: pointer; text-decoration: none; font-weight: 600; font-size: .9rem; transition: transform .1s, background .2s; }
+  .btn:active { transform: scale(.97); }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .btn.danger { background: var(--bad-soft); color: var(--bad); }
+  .btn.danger.armed { background: var(--bad); color: #fff; }
+  select { font: inherit; font-size: .9rem; padding: 8px 32px 8px 12px; border-radius: 12px; border: 0; background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m1 1 5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; color: var(--fg); appearance: none; -webkit-appearance: none; }
+  svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+  [hidden] { display: none !important; }
+
+  /* procvičování */
+  #modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 4px; background: var(--surface-2); border-radius: 14px; }
+  #modes button { border: 0; background: none; padding: 8px 4px; border-radius: 11px; font-size: clamp(.74rem, 3.2vw, .88rem); line-height: 1.2; font-weight: 600; color: var(--muted); cursor: pointer; transition: background .2s, color .2s; }
+  #modes button.on { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+  #prompt { font-size: 1.15rem; font-weight: 700; text-align: center; margin: 18px 0 12px; min-height: 1.6em; letter-spacing: -.01em; }
+  .notebadge { display: inline-block; min-width: 1.9em; margin-left: 6px; padding: 2px 12px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); font-size: 1.5rem; font-weight: 800; line-height: 1.3; vertical-align: middle; box-shadow: 0 4px 14px rgba(var(--heat), .35); animation: pop .3s; }
+  .staff { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); color: var(--fg); margin-bottom: 14px; }
+  #staff { max-width: 440px; margin-inline: auto; }
+  #staff.clickable { cursor: crosshair; }
+  #staff.compact { max-width: 240px; }
+  .staff line { stroke: currentColor; stroke-width: 1.2; }
+  .clef { font-size: 92px; fill: currentColor; }
+  .acc { font-size: 26px; fill: currentColor; text-anchor: middle; }
+  .note { fill: currentColor; }
+  .whole { fill: none; stroke: currentColor; stroke-width: 2.6; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); } .target { color: var(--accent); }
+  .fretboard { background: var(--wood); border-radius: 16px; box-shadow: var(--shadow), inset 0 -3px 0 rgba(0, 0, 0, .08); margin-bottom: 14px; }
+  .fretboard .fret { stroke: var(--fret); stroke-width: 2.5; }
+  .fretboard .nut { stroke: var(--nut); stroke-width: 7; }
+  .fretboard .string { stroke: var(--string); }
+  .fretboard .off { opacity: .25; }
+  .fretboard .dim { fill: var(--bg); opacity: .5; }
+  .fretboard .inlay { fill: var(--inlay); }
+  .fretboard .num { fill: var(--string); opacity: .6; font-size: 12px; font-weight: 600; text-anchor: middle; }
+  .fretboard .cell { fill: transparent; cursor: pointer; }
+  .fretboard .cell:hover { fill: rgba(255, 255, 255, .25); }
+  .fretboard .mark { fill: currentColor; stroke: var(--surface); stroke-width: 2.5; pointer-events: none; }
+  .fretboard .label { fill: #fff; font-size: 10px; font-weight: 800; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .fretboard .heat .label { fill: var(--fg); }
+  #dial { max-width: min(330px, 72vw); margin: 4px auto 0; overflow: visible; filter: drop-shadow(0 6px 18px rgba(16, 18, 40, .10)); }
+  #dial .seg { cursor: pointer; transition: transform .15s; }
+  #dial .seg:active { transform: scale(.97); }
+  #dial .seg path { fill: var(--surface); stroke: var(--bg); stroke-width: 1.5; transition: fill .15s; }
+  #dial .seg.acc path { fill: var(--surface-2); }
+  #dial .seg:hover path { fill: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+  #dial text { fill: var(--fg); font-size: 15px; font-weight: 800; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  #dial text.small { font-size: 9.5px; font-weight: 700; }
+  #dial .seg.ok path { fill: var(--ok); } #dial .seg.bad path { fill: var(--bad); }
+  #dial .seg.ok text, #dial .seg.bad text { fill: #fff; }
+  #dial .seg.ok { animation: segpop .35s; } #dial .seg.bad { animation: shake .35s; }
+  #dial .hub { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+  #dial #needle { fill: var(--accent); opacity: 0; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1), opacity .2s; }
+  #dial #needle.on { opacity: 1; } #dial #needle.ok { fill: var(--ok); } #dial #needle.bad { fill: var(--bad); }
+  #dial .hubtext { font-size: 16px; fill: var(--muted); }
+  #dial .hubtext.ok { fill: var(--ok); } #dial .hubtext.bad { fill: var(--bad); }
+  @keyframes segpop { 50% { transform: scale(1.04); } }
+  #writeAcc { display: flex; justify-content: center; gap: 6px; margin-bottom: 12px; }
+  #writeAcc button { border: 0; border-radius: 12px; min-width: 56px; padding: 6px 0; font-size: 1.3rem; background: var(--surface-2); cursor: pointer; }
+  #writeAcc button.on { background: var(--accent); color: var(--on-accent); }
+  #feedback { width: fit-content; margin: 16px auto 0; padding: 6px 16px; border-radius: 999px; font-weight: 700; animation: pop .3s; }
+  #feedback:empty { visibility: hidden; padding: 6px 0; }
+  #feedback.ok { background: var(--ok-soft); color: var(--ok); }
+  #feedback.bad { background: var(--bad-soft); color: var(--bad); }
+  @keyframes pop { 0% { transform: scale(.85); } 60% { transform: scale(1.06); } }
+  @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+  /* volná hra */
+  .livehead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .bignote { font-size: 3.2rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+  .tuner { position: relative; height: 8px; margin: 18px 0 4px; border-radius: 999px; background: linear-gradient(90deg, var(--bad-soft), var(--surface-2) 40% 60%, var(--bad-soft)); }
+  .tuner::after { content: ""; position: absolute; left: 50%; top: -4px; width: 2px; height: 16px; background: var(--muted); transform: translateX(-50%); }
+  .tuner i { position: absolute; z-index: 1; left: 50%; top: -5px; width: 6px; height: 18px; border-radius: 3px; background: var(--accent); transform: translateX(-50%); transition: left .12s; }
+  .tuner i.in { background: var(--ok); }
+  .liveactions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+  /* statistiky */
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
+  @media (min-width: 640px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
+  .tile { background: var(--surface); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+  .tile:first-child { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+  .tile:first-child small { color: inherit; opacity: .85; }
+  .tile b { display: block; font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .tile small { color: var(--muted); font-size: .8rem; }
+  .calhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .calhead strong { text-transform: capitalize; font-size: 1.05rem; }
+  .calhead .btn { width: 36px; height: 36px; justify-content: center; padding: 0; border-radius: 50%; font-size: 1.2rem; }
+  #calendar { max-width: 420px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+  #calendar b { font-size: .72rem; color: var(--muted); font-weight: 600; }
+  .day { aspect-ratio: 1; border: 0; border-radius: 10px; font-size: .85rem; font-weight: 600; background: var(--surface-2); cursor: pointer; font-variant-numeric: tabular-nums; }
+  .l1 { background: rgba(var(--heat), .22); } .l2 { background: rgba(var(--heat), .45); }
+  .l3 { background: rgba(var(--heat), .72); color: #fff; } .l4 { background: rgb(var(--heat)); color: #fff; }
+  .day.today { box-shadow: inset 0 0 0 2px var(--accent); }
+  .day.sel { outline: 2px solid var(--fg); outline-offset: 1px; }
+  .legend { display: flex; gap: 4px; align-items: center; justify-content: flex-end; font-size: .72rem; color: var(--muted); margin-top: 10px; }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; background: var(--surface-2); }
+  #weeks { display: flex; align-items: flex-end; gap: 6px; height: 140px; }
+  #weeks div { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; font-size: .68rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #weeks span { width: 100%; max-width: 30px; background: linear-gradient(180deg, var(--accent-2), var(--accent)); border-radius: 6px 6px 2px 2px; min-height: 2px; }
+  #weekLabels { display: flex; gap: 6px; font-size: .68rem; color: var(--muted); margin-top: 6px; }
+  #weekLabels span { flex: 1; text-align: center; white-space: nowrap; }
+  .bars { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 12px; align-items: center; font-variant-numeric: tabular-nums; margin-top: 8px; }
+  .bars .track { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .bars .track i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 999px; }
+  .bars small { color: var(--muted); }
+
+  /* výuka */
+  .progress { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .progress i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .lessons { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .lessons a { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); color: var(--fg); text-decoration: none; transition: transform .1s; }
+  .lessons a:active { transform: scale(.99); }
+  .lessons .num { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--accent-soft); color: var(--accent); font-weight: 800; }
+  .lessons .num.done { background: var(--ok-soft); color: var(--ok); }
+  .lessons .t { flex: 1; font-weight: 650; }
+  .lessons small { display: block; color: var(--muted); font-weight: 400; font-size: .82rem; }
+  .lessons .chev { color: var(--muted); }
+  .lesson { line-height: 1.65; }
+  .lesson h2 { font-size: 1.6rem; letter-spacing: -.02em; margin: 6px 0 12px; }
+  .lesson h3 { margin-top: 1.8em; font-size: 1.15rem; }
+  .lesson table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 10px 0; background: var(--surface); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); font-size: .92rem; }
+  .lesson td, .lesson th { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  .lesson tr:last-child td { border-bottom: 0; }
+  .lesson th { background: var(--surface-2); font-weight: 650; }
+  .lesson pre { background: var(--surface); padding: 14px; border-radius: 14px; overflow-x: auto; box-shadow: var(--shadow); }
+  .ex { margin: 14px 0; }
+  .ex svg { margin-bottom: 8px; }
+  .ex .hint { margin: 0 0 8px; }
+  .lessonnav { display: flex; justify-content: space-between; gap: 8px; margin-top: 28px; }
+
+  /* nastavení */
+  .group { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; overflow: hidden; }
+  .group h3 { margin: 0; padding: 14px 18px 4px; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: 0; }
+  .row.col { flex-direction: column; align-items: stretch; }
+  label.row { cursor: pointer; }
+  .switch { appearance: none; -webkit-appearance: none; flex: none; width: 46px; height: 28px; border-radius: 999px; background: var(--surface-2); position: relative; cursor: pointer; transition: background .2s; margin: 0; }
+  .switch::before { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s; }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::before { transform: translateX(18px); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { position: relative; padding: 6px 12px; border-radius: 999px; background: var(--surface-2); font-size: .88rem; font-weight: 600; cursor: pointer; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip:has(input:checked) { background: var(--accent); color: var(--on-accent); }
+  .chip:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Noty na kytaru</h1>
+  <div id="score"></div>
+</header>
+<main>
+  <section id="procvicovani">
+    <nav id="modes">
+      <button data-mode="read">Čtení</button>
+      <button data-mode="write">Zápis</button>
+      <button data-mode="find">Nota → hmat</button>
+      <button data-mode="name">Hmat → nota</button>
+    </nav>
+    <p id="prompt"></p>
+    <div id="writeAcc"></div>
+    <svg id="staff" class="staff" viewBox="0 0 300 190"></svg>
+    <svg id="fretboard" class="fretboard" viewBox="0 0 650 205"></svg>
+    <div id="names"></div>
+    <p id="feedback"></p>
+  </section>
+
+  <section id="hrat" hidden>
+    <div class="card">
+      <div class="livehead">
+        <div><div id="liveNote" class="bignote">–</div><div id="liveInfo" class="hint">Zapni mikrofon a zahraj jeden tón, nebo klepni na hmatník.</div></div>
+        <button class="btn primary" id="micBtn">Zapnout mikrofon</button>
+      </div>
+      <div class="tuner" title="Ladění: středová čárka = čistě"><i id="tunerNeedle"></i></div>
+    </div>
+    <svg id="liveStaff" class="staff" viewBox="0 0 570 190"></svg>
+    <svg id="liveFret" class="fretboard" viewBox="0 0 650 205"></svg>
+    <div class="liveactions"><span class="hint">Pozná jednotlivé tóny, ne akordy. Mikrofon funguje jen přes HTTPS.</span><button class="btn" id="liveClear">Vymazat noty</button></div>
+  </section>
+
+  <section id="vyuka" hidden></section>
+
+  <section id="statistiky" hidden>
+    <div class="tiles" id="tiles"></div>
+    <div class="card">
+      <div class="calhead">
+        <button class="btn" id="calPrev" aria-label="Předchozí měsíc">‹</button>
+        <strong id="calTitle"></strong>
+        <button class="btn" id="calNext" aria-label="Další měsíc">›</button>
+      </div>
+      <div id="calendar"></div>
+      <div class="legend">méně <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> více</div>
+      <p id="dayDetail" class="hint">Klikni na den pro detail.</p>
+    </div>
+    <div class="card">
+      <h3>Odpovědi po týdnech</h3>
+      <div id="weeks"></div>
+      <div id="weekLabels"></div>
+    </div>
+    <div class="card">
+      <h3>Které noty dělají potíže</h3>
+      <select id="statMode">
+        <option value="read">Čtení</option>
+        <option value="write">Zápis</option>
+        <option value="find">Nota → hmat</option>
+        <option value="name">Hmat → nota</option>
+      </select>
+      <p class="hint">Seřazeno od nejhorší úspěšnosti. Délka pruhu = podíl chyb.</p>
+      <div class="bars" id="noteBars"></div>
+      <div id="heatWrap" hidden>
+        <p class="hint">Chybovost podle místa na hmatníku (sytější = víc chyb):</p>
+        <svg id="heat" class="fretboard" viewBox="0 0 650 205"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section id="nastaveni" hidden>
+    <form id="settings">
+      <div class="group">
+        <h3>Noty</h3>
+        <div class="row"><span>Rozsah (čtení, zápis)</span>
+          <select id="range">
+            <option value="staff">Osnova (d¹–g²)</option>
+            <option value="full">Celá kytara (e–e³)</option>
+          </select>
+        </div>
+        <label class="row"><span>Křížky ♯</span><input type="checkbox" class="switch" id="sharps"></label>
+        <label class="row"><span>Béčka ♭</span><input type="checkbox" class="switch" id="flats"></label>
+      </div>
+      <div class="group">
+        <h3>Hmatník</h3>
+        <div class="row col"><span>Struny</span><div class="chips" id="strings"></div></div>
+        <div class="row"><span>Do pražce</span>
+          <select id="maxFret"><option>3</option><option>5</option><option>7</option><option>12</option></select>
+        </div>
+      </div>
+      <div class="group">
+        <h3>Ostatní</h3>
+        <label class="row"><span>Zvuk</span><input type="checkbox" class="switch" id="sound"></label>
+        <label class="row"><span>Častěji zkoušet noty, ve kterých chybuji</span><input type="checkbox" class="switch" id="adaptive"></label>
+      </div>
+    </form>
+    <div class="group">
+      <h3>Data</h3>
+      <div class="row col">
+        <span class="hint">Statistiky se ukládají jen v tomto zařízení. Kytara se zapisuje o oktávu výš, než zní. Na klávesnici můžeš odpovídat písmeny C D E F G A H.</span>
+        <div><button class="btn danger" id="reset">Smazat statistiky</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+<nav id="menu">
+  <a href="#procvicovani"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Procvičování</a>
+  <a href="#hrat"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Volná hra</a>
+  <a href="#vyuka"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Výuka</a>
+  <a href="#statistiky"><svg viewBox="0 0 24 24"><path d="M5 20v-8M12 20V4M19 20v-5"/></svg>Statistiky</a>
+  <a href="#nastaveni"><svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>Nastavení</a>
+</nav>
+<script src="lessons.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
