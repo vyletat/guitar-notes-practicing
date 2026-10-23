@@ -61,7 +61,7 @@
   [hidden] { display: none !important; }
 
   /* procvičování */
-  #modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 4px; background: var(--surface-2); border-radius: 14px; }
+  #modes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 4px; background: var(--surface-2); border-radius: 14px; }
   #modes button { border: 0; background: none; padding: 8px 4px; border-radius: 11px; font-size: clamp(.74rem, 3.2vw, .88rem); line-height: 1.2; font-weight: 600; color: var(--muted); cursor: pointer; transition: background .2s, color .2s; }
   #modes button.on { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
   #prompt { font-size: 1.15rem; font-weight: 700; text-align: center; margin: 18px 0 12px; min-height: 1.6em; letter-spacing: -.01em; }
@@ -125,6 +125,27 @@
   .tuner i.in { background: var(--ok); }
   .liveactions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
+  /* záložky na stránce Hra */
+  .tabs { display: flex; gap: 2px; padding: 4px; background: var(--surface-2); border-radius: 14px; margin-bottom: 14px; }
+  .tabs a { flex: 1; text-align: center; padding: 8px 4px; border-radius: 11px; font-size: .88rem; font-weight: 600; color: var(--muted); text-decoration: none; }
+  .tabs a.on { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+  .card h3:only-child, #alongTitle { margin: 0; }
+  #alongStatus { margin: 4px 0 0; min-height: 1.4em; }
+  #alongStatus.ok { color: var(--ok); } #alongStatus.bad { color: var(--bad); }
+  .alongnums { text-align: right; flex: none; }
+  .alongnums b { display: block; font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .alongnums small { color: var(--muted); white-space: nowrap; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+  #metroBtn.on { background: var(--accent); color: var(--on-accent); }
+  .tempo { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tempo input { flex: 1; accent-color: var(--accent); }
+  .card.done { background: var(--ok-soft); }
+  #alongStaff .staff { margin-bottom: 10px; }
+  .daily { background: var(--surface); border-radius: 14px; padding: 10px 14px; margin-top: 12px; box-shadow: var(--shadow); font-weight: 600; font-size: .9rem; }
+  .daily .progress { margin-top: 6px; }
+  .daily.done { color: var(--ok); }
+  .daily.done .progress i { background: var(--ok); }
+
   /* statistiky */
   .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
   @media (min-width: 640px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
@@ -141,6 +162,8 @@
   .day { aspect-ratio: 1; border: 0; border-radius: 10px; font-size: .85rem; font-weight: 600; background: var(--surface-2); cursor: pointer; font-variant-numeric: tabular-nums; }
   .l1 { background: rgba(var(--heat), .22); } .l2 { background: rgba(var(--heat), .45); }
   .l3 { background: rgba(var(--heat), .72); color: #fff; } .l4 { background: rgb(var(--heat)); color: #fff; }
+  .day { position: relative; }
+  .day.goal::after { content: "✓"; position: absolute; top: 1px; right: 4px; font-size: .6rem; font-weight: 800; }
   .day.today { box-shadow: inset 0 0 0 2px var(--accent); }
   .day.sel { outline: 2px solid var(--fg); outline-offset: 1px; }
   .legend { display: flex; gap: 4px; align-items: center; justify-content: flex-end; font-size: .72rem; color: var(--muted); margin-top: 10px; }
@@ -205,11 +228,13 @@
 <main>
   <section id="procvicovani">
     <nav id="modes">
+      <button data-mode="daily">Denní</button>
       <button data-mode="read">Čtení</button>
       <button data-mode="write">Zápis</button>
       <button data-mode="find">Nota → hmat</button>
       <button data-mode="name">Hmat → nota</button>
     </nav>
+    <div id="daily" class="daily" hidden><span id="dailyText"></span><div class="progress"><i id="dailyBar"></i></div></div>
     <p id="prompt"></p>
     <div id="writeAcc"></div>
     <svg id="staff" class="staff" viewBox="0 0 300 190"></svg>
@@ -219,16 +244,48 @@
   </section>
 
   <section id="hrat" hidden>
-    <div class="card">
-      <div class="livehead">
-        <div><div id="liveNote" class="bignote">–</div><div id="liveInfo" class="hint">Zapni mikrofon a zahraj jeden tón, nebo klepni na hmatník.</div></div>
-        <button class="btn primary" id="micBtn">Zapnout mikrofon</button>
+    <nav id="playTabs" class="tabs">
+      <a href="#hrat/volne" data-tab="volne">Volně</a>
+      <a href="#hrat/noty" data-tab="noty">Podle not</a>
+      <a href="#hrat/etudy" data-tab="etudy">Etudy</a>
+    </nav>
+
+    <div id="playFree">
+      <div class="card">
+        <div class="livehead">
+          <div><div id="liveNote" class="bignote">–</div><div id="liveInfo" class="hint">Zapni mikrofon a zahraj jeden tón, nebo klepni na hmatník.</div></div>
+          <button class="btn primary" id="micBtn">Zapnout mikrofon</button>
+        </div>
+        <div class="tuner" title="Ladění: středová čárka = čistě"><i id="tunerNeedle"></i></div>
       </div>
-      <div class="tuner" title="Ladění: středová čárka = čistě"><i id="tunerNeedle"></i></div>
+      <svg id="liveStaff" class="staff" viewBox="0 0 570 190"></svg>
+      <svg id="liveFret" class="fretboard" viewBox="0 0 650 205"></svg>
+      <div class="liveactions"><span class="hint">Pozná jednotlivé tóny, ne akordy. Mikrofon funguje jen přes HTTPS.</span><button class="btn" id="liveClear">Vymazat noty</button></div>
     </div>
-    <svg id="liveStaff" class="staff" viewBox="0 0 570 190"></svg>
-    <svg id="liveFret" class="fretboard" viewBox="0 0 650 205"></svg>
-    <div class="liveactions"><span class="hint">Pozná jednotlivé tóny, ne akordy. Mikrofon funguje jen přes HTTPS.</span><button class="btn" id="liveClear">Vymazat noty</button></div>
+
+    <div id="etudeList" hidden></div>
+
+    <div id="along" hidden>
+      <div class="card">
+        <div class="livehead">
+          <div><h3 id="alongTitle"></h3><p id="alongStatus" class="hint"></p></div>
+          <div class="alongnums"><b id="alongProgress"></b><small>slyším: <span id="alongHeard">–</span></small></div>
+        </div>
+        <div class="toolbar">
+          <button class="btn primary" id="alongMic">Zapnout mikrofon</button>
+          <button class="btn" id="alongPlay">▶ Přehrát</button>
+          <button class="btn" id="alongHint">Nápověda</button>
+          <button class="btn" id="metroBtn">Metronom</button>
+          <label class="tempo"><input type="range" id="tempo" min="40" max="200" step="5"><span id="tempoValue"></span></label>
+        </div>
+      </div>
+      <div id="alongDone" class="card done" hidden>
+        <b>Hotovo!</b> <span id="alongSummary"></span>
+        <div class="toolbar"><button class="btn" id="alongAgain">Znovu</button><button class="btn primary" id="alongNext"></button></div>
+      </div>
+      <div id="alongStaff"></div>
+      <svg id="alongFret" class="fretboard" viewBox="0 0 650 205"></svg>
+    </div>
   </section>
 
   <section id="vyuka" hidden></section>
@@ -242,7 +299,7 @@
         <button class="btn" id="calNext" aria-label="Další měsíc">›</button>
       </div>
       <div id="calendar"></div>
-      <div class="legend">méně <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> více</div>
+      <div class="legend">méně <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> více · ✓ splněný denní cíl</div>
       <p id="dayDetail" class="hint">Klikni na den pro detail.</p>
     </div>
     <div class="card">
@@ -257,6 +314,7 @@
         <option value="write">Zápis</option>
         <option value="find">Nota → hmat</option>
         <option value="name">Hmat → nota</option>
+        <option value="play">Hra podle not</option>
       </select>
       <p class="hint">Seřazeno od nejhorší úspěšnosti. Délka pruhu = podíl chyb.</p>
       <div class="bars" id="noteBars"></div>
@@ -289,10 +347,20 @@
       </div>
       <div class="group">
         <h3>Ostatní</h3>
+        <div class="row"><span>Denní cíl (odpovědí)</span>
+          <select id="dailyGoal"><option>10</option><option>20</option><option>30</option><option>50</option><option>100</option></select>
+        </div>
         <label class="row"><span>Zvuk</span><input type="checkbox" class="switch" id="sound"></label>
         <label class="row"><span>Častěji zkoušet noty, ve kterých chybuji</span><input type="checkbox" class="switch" id="adaptive"></label>
       </div>
     </form>
+    <div class="group">
+      <h3>Aplikace</h3>
+      <div class="row col">
+        <span class="hint" id="installHint"></span>
+        <div><button class="btn primary" id="installBtn" hidden>Nainstalovat aplikaci</button></div>
+      </div>
+    </div>
     <div class="group">
       <h3>Data</h3>
       <div class="row col">
@@ -304,7 +372,7 @@
 </main>
 <nav id="menu">
   <a href="#procvicovani"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Procvičování</a>
-  <a href="#hrat"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Volná hra</a>
+  <a href="#hrat"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Hra</a>
   <a href="#vyuka"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Výuka</a>
   <a href="#statistiky"><svg viewBox="0 0 24 24"><path d="M5 20v-8M12 20V4M19 20v-5"/></svg>Statistiky</a>
   <a href="#nastaveni"><svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>Nastavení</a>

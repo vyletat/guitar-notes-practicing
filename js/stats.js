@@ -1,5 +1,5 @@
 // Záznam odpovědí a stránka Statistiky (dlaždice, kalendář, týdny, problémové noty).
-import { stats, saveStats, dayKey, pct } from './store.js';
+import { cfg, stats, saveStats, dayKey, pct } from './store.js';
 import { $, $$, drawFretboard } from './draw.js';
 
 let lastAnswer = 0;
@@ -54,8 +54,8 @@ function renderCalendar() {
   for (let d = 1; d <= new Date(y, m + 1, 0).getDate(); d++) {
     const k = dayKey(new Date(y, m, d)), v = stats.days[k];
     const level = !v ? 0 : v.all < 20 ? 1 : v.all < 50 ? 2 : v.all < 100 ? 3 : 4;
-    const title = v ? `${v.all} odpovědí, ${pct(v.ok, v.all)}` : 'bez procvičování';
-    html += `<button class="day l${level}${k === dayKey() ? ' today' : ''}" data-day="${k}" title="${title}">${d}</button>`;
+    const goal = v?.all >= cfg.dailyGoal, title = v ? `${v.all} odpovědí, ${pct(v.ok, v.all)}${goal ? ', denní cíl splněn' : ''}` : 'bez procvičování';
+    html += `<button class="day l${level}${k === dayKey() ? ' today' : ''}${goal ? ' goal' : ''}" data-day="${k}" title="${title}">${d}</button>`;
   }
   $('#calendar').innerHTML = html;
 }

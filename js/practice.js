@@ -1,26 +1,22 @@
-// Stránka Procvičování: 4 režimy (čtení, zápis, nota → hmat, hmat → nota).
-import { NAMES, PC, OPEN, midiOf, stepOf, positions, nameOf, octName, pcName, validAcc } from './music.js';
-import { cfg, stats } from './store.js';
+// Stránka Procvičování: 4 režimy (čtení, zápis, nota → hmat, hmat → nota) a denní trénink, který je střídá.
+import { NAMES, PC, OPEN, stepOf, positions, nameOf, octName, pcName } from './music.js';
+import { cfg, stats, notePool, accidentals, todayCount } from './store.js';
 import { play } from './audio.js';
 import { $, $$, drawStaff, drawFretboard, stepAt } from './draw.js';
 import { renderDial, revealDial } from './dial.js';
 import { record } from './stats.js';
 
-const RANGES = { staff: [29, 39], full: [23, 44] }; // kroky d¹–g², e–e³
 const MODES = ['read', 'write', 'find', 'name'];
 
-let mode = 'read', q = null, locked = false, score = { ok: 0, all: 0 }, writeAcc = 0, active = false;
-const accs = () => [0, ...(cfg.sharps ? [1] : []), ...(cfg.flats ? [-1] : [])];
+// tab = zvolená záložka (režim nebo 'daily'), mode = režim aktuální otázky
+let tab = 'read', mode = 'read', q = null, locked = false, score = { ok: 0, all: 0 }, writeAcc = 0, active = false;
+const accs = accidentals;
 
 // ---------- výběr otázky ----------
 // key = klíč do statistik (a pro váhu otázky)
 function candidates() {
-  if (mode === 'read' || mode === 'write') {
-    const [lo, hi] = RANGES[cfg.range], out = [];
-    for (let step = lo; step <= hi; step++) for (const acc of accs()) if (validAcc(step, acc))
-      out.push({ step, acc, midi: midiOf(step, acc), key: mode === 'read' ? octName(step, acc) : nameOf(step, acc) });
-    return out;
-  }
+  if (mode === 'read' || mode === 'write')
+    return notePool().map(n => ({ ...n, key: mode === 'read' ? octName(n.step, n.acc) : nameOf(n.step, n.acc) }));
   return cfg.strings.flatMap(s => Array.from({ length: cfg.maxFret + 1 }, (_, f) => {
     const midi = OPEN[s] + f, natural = stepOf(midi) !== null;
     if (!natural && !cfg.sharps && !cfg.flats) return null;
@@ -50,8 +46,19 @@ function renderWriteAcc() {
   $('#writeAcc').innerHTML = opts.map(([a, t]) => `<button class="${a === writeAcc ? 'on' : ''}" data-a="${a}">${t}</button>`).join('');
 }
 
+// ---------- denní trénink ----------
+function renderDaily() {
+  const n = todayCount(), goal = cfg.dailyGoal;
+  $('#daily').hidden = tab !== 'daily';
+  $('#dailyText').textContent = n >= goal ? `Denní cíl splněn ✓ (${n} odpovědí) – můžeš pokračovat` : `Dnes ${n} / ${goal} odpovědí`;
+  $('#dailyBar').style.width = `${Math.min(100, 100 * n / goal)}%`;
+  $('#daily').classList.toggle('done', n >= goal);
+}
+
 function next() {
   locked = false;
+  mode = tab === 'daily' ? MODES[Math.floor(Math.random() * MODES.length)] : tab;
+  renderDaily();
   writeAcc = 0;
   $('#feedback').textContent = '';
   $('#feedback').className = '';
@@ -92,11 +99,13 @@ function done(ok) {
   if (mode === 'name') record(ok, mode, pcName(q.midi), q.key);
   else record(ok, mode, q.key);
   const answer = mode === 'name' ? pcName(q.midi) : mode === 'write' ? nameOf(q.step, q.acc) : `${nameOf(q.step, q.acc)} (${octName(q.step, q.acc)})`;
-  $('#feedback').textContent = ok ? `Správně! ${answer}` : `Špatně – správně je ${answer}`;
+  const goalNow = tab === 'daily' && todayCount() === cfg.dailyGoal;
+  $('#feedback').textContent = (ok ? `Správně! ${answer}` : `Špatně – správně je ${answer}`) + (goalNow ? ' · Denní cíl splněn! 🎉' : '');
+  renderDaily();
   $('#feedback').className = ok ? 'ok' : 'bad';
   if (cfg.sound) play(q.midi);
   const current = q;
-  setTimeout(() => { if (q === current && active) next(); }, ok ? 1000 : 2500);
+  setTimeout(() => { if (q === current && active) next(); }, goalNow ? 3000 : ok ? 1000 : 2500);
 }
 
 // ---------- odpovědi ----------
@@ -144,8 +153,8 @@ document.addEventListener('keydown', e => {
 // ---------- vstup na stránku ----------
 export function show(m) {
   active = true;
-  mode = MODES.includes(m) ? m : mode;
-  $$('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  tab = MODES.includes(m) || m === 'daily' ? m : tab;
+  $$('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === tab));
   score = { ok: 0, all: 0 };
   showScore();
   next();

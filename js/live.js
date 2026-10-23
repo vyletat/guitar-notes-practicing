@@ -1,14 +1,12 @@
-// Stránka Volná hra: mikrofon → rozpoznaný tón v osnově, na hmatníku a v ladičce.
+// Záložka Hra → Volně: mikrofon → rozpoznaný tón v osnově, na hmatníku a v ladičce.
 import { OPEN, positions, spell, labelOf, octName } from './music.js';
 import { preferFlats } from './store.js';
-import { audio, play } from './audio.js';
+import { play } from './audio.js';
 import { $, drawStaff, drawFretboard } from './draw.js';
-import { detectPitch, freqToMidi } from './pitch.js';
+import { micOn, startMic, stopMic } from './mic.js';
 
 const STAFF_WIDTH = 570, HISTORY = 12;
-let mic = null, played = [];
-// count = kolik měření po sobě dalo stejný tón; silent = kolik měření bylo ticho
-let live = { midi: null, count: 0, silent: 99, shown: null };
+let played = [];
 
 function showNote(m, cents = null, hz = null) {
   const n = spell(m, preferFlats());
@@ -35,51 +33,17 @@ function tapFret(s, f) {
   addPlayed(m);
 }
 
-function listen() {
-  if (!mic) return;
-  mic.raf = requestAnimationFrame(listen);
-  const now = performance.now();
-  if (now - mic.last < 40) return; // ~25 měření za sekundu stačí a šetří baterii
-  mic.last = now;
-  mic.analyser.getFloatTimeDomainData(mic.buf);
-  const f = detectPitch(mic.buf, audio().sampleRate), m = f && Math.round(freqToMidi(f));
-  if (!m || m < 50 || m > 90) { live.silent++; live.count = 0; return; }
-  live.count = m === live.midi ? live.count + 1 : 1;
-  live.midi = m;
-  if (live.count < 3) return; // tón musí chvíli vydržet, jinak problikává
-  showNote(m, Math.round(100 * (freqToMidi(f) - m)), f);
-  if (m !== live.shown || live.silent > 3) addPlayed(m); // nový tón, nebo znovu zahraný po pauze
-  live.shown = m;
-  live.silent = 0;
+function onNote({ midi, cents, hz, onset }) {
+  showNote(midi, cents, hz);
+  if (onset) addPlayed(midi);
 }
 
-async function startMic() {
-  try {
-    const ctx = audio();
-    await ctx.resume();
-    // bez úprav signálu – potlačení šumu a ozvěny tón zkresluje
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 4096;
-    ctx.createMediaStreamSource(stream).connect(analyser);
-    mic = { stream, analyser, buf: new Float32Array(analyser.fftSize), last: 0 };
-    $('#micBtn').textContent = 'Vypnout mikrofon';
-    $('#liveInfo').textContent = 'Poslouchám… zahraj tón';
-    listen();
-  } catch (e) {
-    $('#liveInfo').textContent = 'Mikrofon není dostupný: ' + (e.name === 'NotAllowedError' ? 'přístup zamítnut' : e.message || e.name);
-  }
-}
-
-function stopMic() {
-  if (!mic) return;
-  cancelAnimationFrame(mic.raf);
-  mic.stream.getTracks().forEach(t => t.stop());
-  mic = null;
-  $('#micBtn').textContent = 'Zapnout mikrofon';
-}
-
-$('#micBtn').onclick = () => mic ? stopMic() : startMic();
+$('#micBtn').onclick = async () => {
+  if (micOn()) return hide();
+  const err = await startMic(onNote);
+  $('#liveInfo').textContent = err || 'Poslouchám… zahraj tón';
+  if (!err) $('#micBtn').textContent = 'Vypnout mikrofon';
+};
 $('#liveClear').onclick = () => { played = []; drawPlayed(); };
 
 export function show() {
@@ -87,4 +51,7 @@ export function show() {
   drawPlayed();
   drawFretboard($('#liveFret'), [], { onClick: tapFret });
 }
-export const hide = stopMic;
+export function hide() {
+  stopMic();
+  $('#micBtn').textContent = 'Zapnout mikrofon';
+}

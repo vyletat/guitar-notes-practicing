@@ -4,13 +4,18 @@ Webová aplikace (PWA) pro učení not a hmatníku kytary. Funguje v prohlíže�
 
 ## Co umí
 
-- **Procvičování** ve 4 režimech:
+- **Procvičování** v 5 režimech:
+  - **Denní:** střídá všechny režimy a ukazuje pokrok k dennímu cíli (nastavitelný). Splněné dny se vyznačí v kalendáři.
   - **Čtení:** vidíš notu v osnově a vybereš její jméno na kruhovém ciferníku.
   - **Zápis:** dostaneš jméno noty a klepneš na správné místo do osnovy.
   - **Nota → hmat:** vidíš notu v osnově a najdeš ji na hmatníku.
   - **Hmat → nota:** na hmatníku je označené místo a ty určíš, jaká je to nota.
   - Volitelně s křížky a béčky. Noty, ve kterých chybuješ, se objevují častěji.
-- **Volná hra:** mikrofon pozná tón zahraný na kytaru a ukáže ho v osnově, na hmatníku a v ladičce.
+- **Hra** na skutečnou kytaru přes mikrofon:
+  - **Volně:** pozná zahraný tón a ukáže ho v osnově, na hmatníku a v ladičce.
+  - **Podle not:** ukáže 8 náhodných not, ty je zahraješ a mikrofon kontroluje, jestli správně.
+  - **Etudy:** 13 cvičení a melodií (struny, stupnice, „pavouk“, Óda na radost…) s přehráním, metronomem a nastavitelným tempem.
+  - Bez mikrofonu můžeš místo hraní klepat na hmatník.
 - **Výuka:** 13 kapitol hudební teorie (osnova, posuvky, stupnice, intervaly, akordy, kytara, hmatník) s příklady, které jdou přehrát.
 - **Statistiky:** kalendář procvičování, přehled po týdnech a noty, které ti dělají potíže.
 
@@ -41,7 +46,7 @@ npm test
 1. Na počítači spusť `npm start`. Server vypíše i adresu v místní síti, např. `http://192.168.1.23:8080`.
 2. Tu adresu otevři v prohlížeči na mobilu. Windows se může zeptat na povolení ve firewallu, povol přístup v privátní síti.
 
-Takhle funguje procvičování, výuka i statistiky. **Mikrofon, instalace na plochu a offline režim ale nefungují.** Prohlížeče je povolují jen přes HTTPS.
+Takhle funguje procvičování, výuka i statistiky. **Mikrofon, instalace na plochu a offline režim ale nefungují.** Prohlížeče je povolují jen přes HTTPS. Proč instalace nejde, ukáže aplikace v *Nastavení → Aplikace*.
 
 ### Plná aplikace přes HTTPS (doporučeno)
 
@@ -61,6 +66,8 @@ Případně můžeš celou složku přetáhnout na [Netlify Drop](https://app.ne
 
 ### Instalace na plochu
 
+V Chromu a Edgi (počítač i Android) stačí v aplikaci otevřít *Nastavení → Aplikace → Nainstalovat aplikaci*. Jinak:
+
 - **Android (Chrome):** otevři adresu aplikace → menu ⋮ → *Přidat na plochu* / *Instalovat aplikaci*.
 - **iPhone (Safari):** otevři adresu aplikace → tlačítko *Sdílet* → *Přidat na plochu*.
 
@@ -75,11 +82,14 @@ Pak se aplikace spouští jako samostatná aplikace a funguje i bez internetu. P
 | `js/music.js` | hudební teorie bez práce se stránkou: názvy not, oktávy, posuvky, místa na hmatníku |
 | `js/pitch.js` | rozpoznání výšky tónu (algoritmus YIN) |
 | `js/store.js` | nastavení a statistiky v localStorage |
-| `js/audio.js` | přehrání tónu |
+| `js/audio.js` | přehrání tónu a metronom |
 | `js/draw.js` | kreslení osnovy a hmatníku do SVG |
 | `js/dial.js` | kruhový ciferník pro výběr noty |
 | `js/practice.js` | stránka Procvičování |
-| `js/live.js` | stránka Volná hra (mikrofon) |
+| `js/mic.js` | mikrofon → stabilně rozpoznané tóny a nové údery |
+| `js/live.js` | záložka Hra → Volně |
+| `js/playalong.js` | záložky Hra → Podle not a Etudy |
+| `js/etudes.js` | noty etud |
 | `js/lessons.js` | stránka Výuka |
 | `js/lessons-content.js` | texty kapitol a příklady |
 | `js/stats.js` | záznam odpovědí a stránka Statistiky |
