@@ -101,8 +101,8 @@
   #dial .seg.ok text, #dial .seg.bad text { fill: #fff; }
   #dial .seg.ok { animation: segpop .35s; } #dial .seg.bad { animation: shake .35s; }
   #dial .hub { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
-  #dial #needle { fill: var(--accent); opacity: 0; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1), opacity .2s; }
-  #dial #needle.on { opacity: 1; } #dial #needle.ok { fill: var(--ok); } #dial #needle.bad { fill: var(--bad); }
+  #dial .needle { fill: var(--accent); opacity: 0; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1), opacity .2s; }
+  #dial .needle.on { opacity: 1; } #dial .needle.ok { fill: var(--ok); } #dial .needle.bad { fill: var(--bad); }
   #dial .hubtext { font-size: 16px; fill: var(--muted); }
   #dial .hubtext.ok { fill: var(--ok); } #dial .hubtext.bad { fill: var(--bad); }
   @keyframes segpop { 50% { transform: scale(1.04); } }
@@ -309,7 +309,6 @@
   <a href="#statistiky"><svg viewBox="0 0 24 24"><path d="M5 20v-8M12 20V4M19 20v-5"/></svg>Statistiky</a>
   <a href="#nastaveni"><svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>Nastavení</a>
 </nav>
-<script src="lessons.js"></script>
-<script src="app.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>

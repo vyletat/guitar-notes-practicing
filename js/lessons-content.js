@@ -2,7 +2,7 @@
 // data-fret="struna:pražec …", data-chord = zahrát najednou, data-text = popisek.
 const practice = (mode, text) => `<p><a class="btn primary" href="#procvicovani/${mode}">${text} →</a></p>`;
 
-const LESSONS = [
+export const LESSONS = [
 {
   title: 'Osnova a houslový klíč',
   sub: 'Linky, mezery, pomocné linky',

@@ -1,6 +1,7 @@
 // Network-first: online vždy čerstvá verze, offline z cache.
-const CACHE = 'noty-v4';
-const FILES = ['./', 'index.html', 'app.js', 'lessons.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'noty-v5';
+const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png',
+  ...['main', 'music', 'pitch', 'store', 'audio', 'draw', 'dial', 'practice', 'stats', 'lessons', 'lessons-content', 'live'].map(f => `js/${f}.js`)];
 
 self.oninstall = e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); };
 self.onactivate = e => e.waitUntil(clients.claim());
