@@ -5,6 +5,7 @@ import { $, $$ } from './draw.js';
 import * as practice from './practice.js';
 import * as live from './live.js';
 import * as along from './playalong.js';
+import * as metronome from './metronome.js';
 import { renderStats } from './stats.js';
 import { renderLesson } from './lessons.js';
 
@@ -46,15 +47,17 @@ $('#reset').onclick = e => {
 fillForm();
 
 // ---------- navigace (#stranka/parametr/parametr) ----------
-// stránka Hra má záložky: #hrat/volne, #hrat/noty, #hrat/etudy[/číslo]
+// stránka Hra má záložky: #hrat/volne, #hrat/noty, #hrat/etudy[/číslo], #hrat/metronom
 function showPlay(tab, arg) {
-  tab = ['volne', 'noty', 'etudy'].includes(tab) ? tab : 'volne';
+  tab = ['volne', 'noty', 'etudy', 'metronom'].includes(tab) ? tab : 'volne';
   $$('#playTabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
   $('#playFree').hidden = tab !== 'volne';
+  $('#metronome').hidden = tab !== 'metronom';
   $('#along').hidden = $('#etudeList').hidden = true;
   if (tab === 'volne') live.show();
   else if (tab === 'noty') along.showRandom();
-  else along.showEtudes(arg);
+  else if (tab === 'etudy') along.showEtudes(arg);
+  else metronome.show();
 }
 
 const PAGES = {
@@ -75,6 +78,7 @@ function route() {
   practice.hide();
   live.hide(); // vypne mikrofon a metronom při odchodu ze stránky
   along.hide();
+  metronome.hide();
   show(arg, arg2);
   scrollTo(0, 0);
 }

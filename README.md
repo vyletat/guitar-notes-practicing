@@ -15,6 +15,7 @@ Webová aplikace (PWA) pro učení not a hmatníku kytary. Funguje v prohlíže�
   - **Volně:** pozná zahraný tón a ukáže ho v osnově, na hmatníku a v ladičce.
   - **Podle not:** ukáže 8 náhodných not, ty je zahraješ a mikrofon kontroluje, jestli správně.
   - **Etudy:** 13 cvičení a melodií (struny, stupnice, „pavouk“, Óda na radost…) s přehráním, metronomem a nastavitelným tempem.
+  - **Metronom:** 30–240 BPM, takty 2/4, 3/4, 4/4 a 6/8, zvýrazněná první doba, ťukání tempa, ovládání mezerníkem.
   - Bez mikrofonu můžeš místo hraní klepat na hmatník.
 - **Výuka:** 13 kapitol hudební teorie (osnova, posuvky, stupnice, intervaly, akordy, kytara, hmatník) s příklady, které jdou přehrát.
 - **Statistiky:** kalendář procvičování, přehled po týdnech a noty, které ti dělají potíže.
@@ -90,6 +91,7 @@ Pak se aplikace spouští jako samostatná aplikace a funguje i bez internetu. P
 | `js/live.js` | záložka Hra → Volně |
 | `js/playalong.js` | záložky Hra → Podle not a Etudy |
 | `js/etudes.js` | noty etud |
+| `js/metronome.js` | záložka Hra → Metronom |
 | `js/lessons.js` | stránka Výuka |
 | `js/lessons-content.js` | texty kapitol a příklady |
 | `js/stats.js` | záznam odpovědí a stránka Statistiky |

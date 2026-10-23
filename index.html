@@ -146,6 +146,21 @@
   .daily.done { color: var(--ok); }
   .daily.done .progress i { background: var(--ok); }
 
+  /* metronom */
+  .metro { text-align: center; }
+  .beatdots { display: flex; justify-content: center; gap: 12px; margin: 6px 0 18px; }
+  .beatdots i { width: 18px; height: 18px; border-radius: 50%; background: var(--surface-2); transition: background .06s, transform .06s; }
+  .beatdots i.lit { background: var(--accent); transform: scale(1.25); }
+  .beatdots i.first.lit { background: var(--accent-2); transform: scale(1.45); }
+  .bpm { display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .bpm b { display: block; font-size: 4rem; font-weight: 800; line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; min-width: 3ch; }
+  .bpm small { color: var(--muted); font-weight: 600; }
+  .btn.round { width: 52px; height: 52px; border-radius: 50%; justify-content: center; font-size: 1.6rem; padding: 0; }
+  #bpmRange { width: 100%; margin: 20px 0 4px; accent-color: var(--accent); }
+  .toolbar.center { justify-content: center; }
+  .btn.big { width: 100%; justify-content: center; padding: 14px; font-size: 1.1rem; margin-top: 16px; border-radius: 14px; }
+  #metroStart.on { background: var(--bad); color: #fff; }
+
   /* statistiky */
   .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
   @media (min-width: 640px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
@@ -248,6 +263,7 @@
       <a href="#hrat/volne" data-tab="volne">Volně</a>
       <a href="#hrat/noty" data-tab="noty">Podle not</a>
       <a href="#hrat/etudy" data-tab="etudy">Etudy</a>
+      <a href="#hrat/metronom" data-tab="metronom">Metronom</a>
     </nav>
 
     <div id="playFree">
@@ -261,6 +277,24 @@
       <svg id="liveStaff" class="staff" viewBox="0 0 570 190"></svg>
       <svg id="liveFret" class="fretboard" viewBox="0 0 650 205"></svg>
       <div class="liveactions"><span class="hint">Pozná jednotlivé tóny, ne akordy. Mikrofon funguje jen přes HTTPS.</span><button class="btn" id="liveClear">Vymazat noty</button></div>
+    </div>
+
+    <div id="metronome" hidden>
+      <div class="card metro">
+        <div id="beatDots" class="beatdots"></div>
+        <div class="bpm">
+          <button class="btn round" id="bpmMinus" aria-label="Pomaleji">−</button>
+          <div><b id="bpmValue"></b><small>BPM · <span id="tempoName"></span></small></div>
+          <button class="btn round" id="bpmPlus" aria-label="Rychleji">+</button>
+        </div>
+        <input type="range" id="bpmRange" min="30" max="240" aria-label="Tempo">
+        <div class="toolbar center">
+          <select id="beatsSel" aria-label="Takt"><option value="2">2/4</option><option value="3">3/4</option><option value="4">4/4</option><option value="6">6/8</option></select>
+          <button class="btn" id="tapBtn">Ťukni do rytmu</button>
+        </div>
+        <button class="btn primary big" id="metroStart"></button>
+        <p class="hint">Mezerník spouští a zastavuje. Při ťukání klepni aspoň dvakrát v požadovaném tempu.</p>
+      </div>
     </div>
 
     <div id="etudeList" hidden></div>

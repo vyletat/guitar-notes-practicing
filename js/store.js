@@ -6,7 +6,7 @@ const save = (key, value) => { try { localStorage[key] = JSON.stringify(value); 
 
 export const cfg = load('noty', {
   range: 'staff', strings: [0, 1, 2, 3, 4, 5], maxFret: 5, sound: true,
-  sharps: false, flats: false, adaptive: true, dailyGoal: 20,
+  sharps: false, flats: false, adaptive: true, dailyGoal: 20, metroBpm: 80, metroBeats: 4,
 });
 // days[YYYY-MM-DD] = {ok, all, sec}; notes[režim][nota] = [ok, all]; pos['struna-pražec'] = [ok, all] (režim hmat → nota)
 export const stats = load('notyStats', { days: {}, notes: {}, pos: {} });

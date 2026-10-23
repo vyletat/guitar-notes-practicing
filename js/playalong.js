@@ -2,7 +2,7 @@
 // a mikrofon (nebo klepnutí na hmatník) kontroluje, jestli hraješ správně. Bez hodnocení rytmu.
 import { OPEN, positions, nameOf, octName, labelOf, parseNote, midiOf, spell } from './music.js';
 import { cfg, notePool, preferFlats, pct } from './store.js';
-import { play, startMetronome, stopMetronome, metronomeOn } from './audio.js';
+import { play, startMetronome, stopMetronome, setMetronome, metronomeOn } from './audio.js';
 import { $, el, drawStaff, drawFretboard } from './draw.js';
 import { micOn, startMic, stopMic } from './mic.js';
 import { record } from './stats.js';
@@ -103,9 +103,9 @@ function onNote({ midi, onset }) {
 
 // ---------- ovládání ----------
 const showTempo = () => { $('#tempoValue').textContent = `${$('#tempo').value} BPM`; };
-$('#tempo').oninput = () => { showTempo(); if (metronomeOn()) startMetronome(+$('#tempo').value); };
+$('#tempo').oninput = () => { showTempo(); setMetronome({ bpm: +$('#tempo').value }); };
 $('#metroBtn').onclick = () => {
-  if (metronomeOn()) stopMetronome(); else startMetronome(+$('#tempo').value);
+  if (metronomeOn()) stopMetronome(); else startMetronome({ bpm: +$('#tempo').value });
   $('#metroBtn').classList.toggle('on', metronomeOn());
 };
 $('#alongPlay').onclick = () => {

@@ -1,7 +1,7 @@
 // Network-first: online vždy čerstvá verze, offline z cache.
-const CACHE = 'noty-v6';
+const CACHE = 'noty-v7';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png',
-  ...['main', 'music', 'pitch', 'store', 'audio', 'draw', 'dial', 'practice', 'stats', 'lessons', 'lessons-content', 'live', 'mic', 'playalong', 'etudes'].map(f => `js/${f}.js`)];
+  ...['main', 'music', 'pitch', 'store', 'audio', 'draw', 'dial', 'practice', 'stats', 'lessons', 'lessons-content', 'live', 'mic', 'playalong', 'etudes', 'metronome'].map(f => `js/${f}.js`)];
 
 self.oninstall = e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); };
 // smazat cache starších verzí
